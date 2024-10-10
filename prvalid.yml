@@ -49,6 +49,7 @@ stages:
               echo "Pipeline run has been completed with status: " $STATUS
     - task: AzureCLI@2
       displayName: Result of Build SDK pipeline run
+      condition: always()
       env:
         AZURE_STORAGE_AUTH_MODE: 'login'
         AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
@@ -57,9 +58,19 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-              echo "Pipeline Status: " $(az pipelines runs show --id $RUN_ID_BUILD_SDK --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
-              echo "Pipeling Result: " $(az pipelines runs show --id $RUN_ID_BUILD_SDK --organization https://dev.azure.com/prathambande --project Playground --query result -o tsv)
-              echo "Pipeline Link: https://dev.azure.com/prathambande/Playground/_build/results?buildId=$RUN_ID_BUILD_SDK&view=results"
+              if [ "$AGENT_JOBSTATUS" = "Canceled" ]; then
+                if [ -z "$RUN_ID_BUILD_SDK" ]; then
+                  echo "Pipeline abandoned"
+                  echo $(az pipelines build cancel --build-id $RUN_ID_BUILD_SDK --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv) 
+                fi
+              fi
+              if [ -z "$RUN_ID_BUILD_SDK" ]; then
+                echo "Pipeline Status: " $(az pipelines runs show --id $RUN_ID_BUILD_SDK --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
+                echo "Pipeling Result: " $(az pipelines runs show --id $RUN_ID_BUILD_SDK --organization https://dev.azure.com/prathambande --project Playground --query result -o tsv)
+                echo "Pipeline Link: https://dev.azure.com/prathambande/Playground/_build/results?buildId=$RUN_ID_BUILD_SDK&view=results"
+              else
+                echo "Run was not initiated"
+              fi
 
 - stage: build_image
   displayName: Build Image
@@ -125,9 +136,19 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-              echo "Pipeline Status: " $(az pipelines runs show --id $RUN_ID_BUILD_IMAGE --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
-              echo "Pipeling Result: " $(az pipelines runs show --id $RUN_ID_BUILD_IMAGE --organization https://dev.azure.com/prathambande --project Playground --query result -o tsv)
-              echo "Pipeline Link: https://dev.azure.com/prathambande/Playground/_build/results?buildId=$RUN_ID_BUILD_IMAGE&view=results"
+              if [ "$AGENT_JOBSTATUS" = "Canceled" ]; then
+                if [ -z "$RUN_ID_BUILD_SDK" ]; then
+                  echo "Pipeline abandoned" 
+                  echo $(az pipelines build cancel --build-id $RUN_ID_BUILD_IMAGE --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
+                fi
+              fi
+              if [ -z "$RUN_ID_BUILD_SDK" ]; then
+                echo "Pipeline Status: " $(az pipelines runs show --id $RUN_ID_BUILD_IMAGE --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
+                echo "Pipeling Result: " $(az pipelines runs show --id $RUN_ID_BUILD_IMAGE --organization https://dev.azure.com/prathambande --project Playground --query result -o tsv)
+                echo "Pipeline Link: https://dev.azure.com/prathambande/Playground/_build/results?buildId=$RUN_ID_BUILD_IMAGE&view=results"
+              else
+                echo "Run was not initiated"
+              fi
 
 - stage: Test
   displayName: Testing
@@ -186,7 +207,19 @@ stages:
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
-              echo "Pipeline Status: " $(az pipelines runs show --id $RUN_ID_TEST --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
-              echo "Pipeling Result: " $(az pipelines runs show --id $RUN_ID_TEST --organization https://dev.azure.com/prathambande --project Playground --query result -o tsv)
-              echo "Pipeline Link: https://dev.azure.com/prathambande/Playground/_build/results?buildId=$RUN_ID_TEST&view=results"
+              if [ "$AGENT_JOBSTATUS" = "Canceled" ]; then
+                if [ -z "$RUN_ID_BUILD_SDK" ]; then
+                  echo "Pipeline abandoned" 
+                  echo $(az pipelines build cancel --build-id $RUN_ID_TEST --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv) 
+                fi
+              fi
+              if [ -z "$RUN_ID_BUILD_SDK" ]; then
+                echo "Pipeline Status: " $(az pipelines runs show --id $RUN_ID_TEST --organization https://dev.azure.com/prathambande --project Playground --query status -o tsv)
+                echo "Pipeling Result: " $(az pipelines runs show --id $RUN_ID_TEST --organization https://dev.azure.com/prathambande --project Playground --query result -o tsv)
+                echo "Pipeline Link: https://dev.azure.com/prathambande/Playground/_build/results?buildId=$RUN_ID_TEST&view=results"
+              else
+                echo "Run was not initiated"
+              fi
+            
+              
   
