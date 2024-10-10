@@ -21,7 +21,7 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
               RUN_ID=$(az pipelines run \
-                --name AAPT-Playground-Oryx-Publish-Binaries-Buddy \
+                --name P1SDK \
                 --organization https://dev.azure.com/prathambande \
                 --project Playground \
                 --query id \
@@ -80,7 +80,7 @@ stages:
         scriptLocation: 'inlineScript'
         inlineScript: |
               RUN_ID=$(az pipelines run \
-                --name AAPT-Playground-Oryx-Buddy \
+                --name P2IMG \
                 --organization https://dev.azure.com/prathambande \
                 --project Playground \
                 --query id \
@@ -150,7 +150,7 @@ stages:
         inlineScript: |
               echo "Using Build Number: " $BUILD_NUMBER_BUILD_IMAGE
               RUN_ID=$(az pipelines run \
-                --name OryxTests \
+                --name P3TEST \
                 --organization https://dev.azure.com/prathambande \
                 --project Playground \
                 --query id \
